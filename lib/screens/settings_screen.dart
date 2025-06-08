@@ -41,19 +41,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _removeStudent(int index) async {
+    // Store the context of the SettingsScreenState
+    final BuildContext settingsScreenContext = context;
+
     final confirmed = await showDialog<bool>(
-      context: context,
+      context: settingsScreenContext, // Use the stable context for showDialog
       builder:
-          (_) => AlertDialog(
+          (BuildContext dialogContext) => AlertDialog(
+            // Give the dialog's context a distinct name
             title: const Text('Confirm Removal'),
             content: Text('Delete "${_students[index]}"?'),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context, false),
+                // Use the dialog's context for popping the dialog itself
+                onPressed: () => Navigator.pop(dialogContext, false),
                 child: const Text('No'),
               ),
               TextButton(
-                onPressed: () => Navigator.pop(context, true),
+                // Use the dialog's context for popping the dialog itself
+                onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Yes'),
               ),
             ],
@@ -61,6 +67,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (confirmed == true) {
       await _dbService.removeStudentAt(index);
+      // After removal, reload students, which will trigger a rebuild.
+      // The dialog should already be gone because we popped it using its own context.
       await _loadStudents();
     }
   }
